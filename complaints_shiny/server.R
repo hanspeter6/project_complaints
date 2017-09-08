@@ -25,6 +25,7 @@ shinyServer(function(input, output) {
   output$histPlot <- renderPlot({
     
     # generate histograms of total sentiment created input$product from ui.R
+          
           # product select
           if(input$product == "All") {
                   x <- complaints_sentiments
@@ -48,7 +49,8 @@ shinyServer(function(input, output) {
           # }
           
           # dealing with date range
-          x <- x %>% filter(date_received > input$dates[1] & date_received < input$dates[2])
+          x <- x %>%
+                  filter(date_received > input$dates[1] & date_received < input$dates[2])
 
     ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
             geom_histogram(binwidth = 2) +
@@ -60,28 +62,31 @@ shinyServer(function(input, output) {
     
   })
   
-  output$topicPlot <- renderPlot({
-          
-          # Doing LDA. k = number of topics (need to generalise this for k = 2 - 5)
+  # output$linePlot <- renderPlot({
+  #         
+  #         
+  #         
+  # })
+  
+  complaints_lda <- reactive({
           set.seed(56)
-          complaints_lda <- LDA(complaints_dtm, k = input$k)
-              
-          # consider the beta parameters (ie the probabilities of a given topic k generating a particular word i)
-          # gamma: this gives the topic "mixtures" for each document.
-          
-          # first consider the beta parameters
-          complaints_topics <- tidy(complaints_lda, matrix = "beta")
-          
-          # extract top 15 terms in each topic and arrange and plot
-          top_terms <- complaints_topics %>%
+          LDA(complaints_dtm, k = input$k)
+  })
+  
+  complaints_topics <- reactive({
+          tidy(complaints_lda(), matrix = "beta")%>%
                   group_by(topic) %>%
                   top_n(15, beta) %>%
                   ungroup() %>%
-                  arrange(topic, -beta)
+                  arrange(topic, -beta) %>%
+                  mutate(term = reorder(term, beta))
           
-          top_terms %>%
-                  mutate(term = reorder(term, beta)) %>%
-                  ggplot(aes(term, beta, fill = factor(topic))) +
+          
+  })
+  
+  output$topicPlot <- renderPlot({
+
+          ggplot(complaints_topics(), aes(term, beta, fill = factor(topic))) +
                   geom_col(show.legend = FALSE) +
                   facet_wrap(~ topic, scales = "free") +
                   coord_flip()
@@ -91,7 +96,7 @@ shinyServer(function(input, output) {
   
   output$myText <- renderText({
           
-          # trying to display my textinput
+          # display my textinput
           print(input$text)
           
   })
@@ -139,7 +144,6 @@ shinyServer(function(input, output) {
  
           # now want to get topic probabilities..(gamma) for the my new complaint
           #  fuck...
-          
   })
   
   
