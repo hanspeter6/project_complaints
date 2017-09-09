@@ -15,6 +15,16 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     sidebarPanel(
                                             
+                                            h4("Documentation"),
+                                            h6("This section reflects relative sentiments
+                                               of complaints related to various products etc..."),
+                                            h4("How it works"),
+                                            h6("A user can select any or all the products shown in the
+                                               drop down menu selection below. A change in the graphic will only reflect
+                                               on clicking the 'Submit' button below. One can select a date range as well
+                                               as indicating whether you want to consider only those complaints that led
+                                               to complensation"),
+                                            
                                             selectInput(inputId = "product",
                                                         label = "Select Product:",
                                                         choices = c("All", "Mortgage", "Credit card", "Debt collection", "Credit reporting", "Bank account or service"),
@@ -42,13 +52,20 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                    
                    tabPanel("Topic Analysis",
                             sidebarLayout(
+                                    
                                     sidebarPanel(
-                                            width = 2,
+                                            width = 3,
+                                            
+                                            h4("Documentation"),
+                                            h6("blah blah"),
+                                            h4(" How it works"),
+                                            h6("blah, blah"),
+                                            
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
                                                          choices = c(2,3,4,5),
                                                          selected = 2,
-                                                         inline = FALSE),
+                                                         inline = TRUE),
                                             submitButton("Submit")),
                                     mainPanel(
                                             plotOutput("topicPlot")
