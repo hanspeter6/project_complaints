@@ -29,30 +29,51 @@ shinyServer(function(input, output) {
                                 filter(product == input$product)  
                 }
                 
-                # # compensation or not
-                # if(input$compensation == "Yes & No") {
-                #         x <- x 
-                # }
-                # else if(input$compensation == "Yes") {
-                #         x <- x %>%
-                #                 filter(consumer_compensated == TRUE)
-                # }
-                # else if(input$compensation == "No") {
-                #         x <- x %>%
-                #                 filter(consumer_compensated == FALSE)
-                # }
+                # compensation or not
+                if(input$compensation == "All") {
+                        x <- x
+                }
+                else if(input$compensation == "Yes") {
+                        x <- x %>%
+                                filter(consumer_compensated == TRUE)
+                }
+                else if(input$compensation == "No") {
+                        x <- x %>%
+                                filter(consumer_compensated == FALSE)
+                }
                 
                 # date range
                 x <- x %>%
                         filter(date_received > input$dates[1] & date_received < input$dates[2])
                 
-                ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
-                        geom_histogram(binwidth = 2) +
-                        xlab("Total Sentiment") +
-                        ylab("Complaints") +
-                        scale_fill_discrete(name="compensated",
-                                            labels=c("No", "Yes")) +
-                        xlim(c(-20,20))
+                # plot
+                if(input$compensation == "All") {
+                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
+                                geom_histogram(binwidth = 2) +
+                                xlab("Total Sentiment") +
+                                ylab("Complaints") +
+                                scale_fill_discrete(name="compensated",
+                                                    labels=c("No", "Yes")) +
+                                xlim(c(-20,20))
+                }
+                else if(input$compensation == "Yes") {
+                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
+                                geom_histogram(binwidth = 2, fill = "#00BFC4") +
+                                xlab("Total Sentiment") +
+                                ylab("Complaints") +
+                                scale_fill_discrete(name="compensated",
+                                                    labels=c("Yes")) +
+                                xlim(c(-20,20))
+                }
+                else if(input$compensation == "No") {
+                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
+                                geom_histogram(binwidth = 2, fill = "#F8766D") +
+                                xlab("Total Sentiment") +
+                                ylab("Complaints") +
+                                scale_fill_discrete(name="compensated",
+                                                    labels=c("No")) +
+                                xlim(c(-20,20))
+                }
                 
         })
         

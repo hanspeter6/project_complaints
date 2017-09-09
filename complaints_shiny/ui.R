@@ -14,17 +14,28 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                    tabPanel("Sentiment Analysis",
                             sidebarLayout(
                                     sidebarPanel(
+                                            
                                             selectInput(inputId = "product",
                                                         label = "Select Product:",
                                                         choices = c("All", "Mortgage", "Credit card", "Debt collection", "Credit reporting", "Bank account or service"),
                                                         selected = "All"),
+                                            
                                             dateRangeInput(inputId = "dates",
                                                            label = "Date Range:",
                                                            start =  "2015-03-19",
                                                            end = "2016-04-20",
                                                            min = "2015-03-19",
                                                            max = "2016-04-20"),
+                                            
+                                            radioButtons(inputId = "compensation",
+                                                         label = "Compensation Paid:",
+                                                         choices = c("All", "Yes", "No"),
+                                                         selected = "All",
+                                                         inline = TRUE),
+                                            
                                             submitButton("Submit")),
+                                    
+                                    
                                     mainPanel(
                                             plotOutput("histPlot")
                                     ))),
