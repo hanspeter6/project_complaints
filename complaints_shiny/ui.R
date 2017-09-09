@@ -58,40 +58,23 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     sidebarPanel(
                                             
-                                            checkboxInput(inputId = "own", "Own"),
+                                            radioButtons(inputId = "radbut",
+                                                         label = "Select Sampling",
+                                                         choices = c("ID", "Random", "Own"),
+                                                         inline = TRUE),
                                             
-                                            conditionalPanel(
-                                                    condition = "input.own ==  true",
-                                                    textInput(inputId = "text",
-                                                      label = "Write Sample Complaint Here:",
-                                                      width = 'auto')),
+                                            textInput(inputId = "text",
+                                                      label = "Copy Own Sample Here:"),
                                             
-                                            checkboxInput(inputId = "random", "Random"),
-                                            
-                                            conditionalPanel(
-                                                    condition = "input.random ==  true",
-                                                    textInput(inputId = "text",
-                                                              label = "Do the random thing now",
-                                                              width = 'auto')),
-                                            
-                                            checkboxInput(inputId = "id", "id"),
-                                            
-                                            conditionalPanel(
-                                                    condition = "input.id ==  true",
-                                                    textInput(inputId = "text",
-                                                              label = "ID now...",
-                                                              width = 'auto')),
-                                            
+                                            numericInput(inputId = "idno",
+                                                         label = "ID number from 1 to 20 000)",
+                                                         min = 1,
+                                                         max = 20000,
+                                                         value = 5),
+
                                             submitButton("Submit")),
-                                            # 
-                                            # conditionalPanel(
-                                            #         condition = "input.random == true",
-                                            #         helpText("Fuck Random")),
-                                            # 
-                                            # conditionalPanel(
-                                            #         conditon = "input.id == true",
-                                            #         helpText("Fuckoff Id"))),
-                                    mainPanel(
+                                            
+                                     mainPanel(
                                             verbatimTextOutput("myText"),
                                             tableOutput("myTable"),
                                             h5("Total Sentiment Score:"),

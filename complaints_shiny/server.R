@@ -8,6 +8,7 @@ library(tm)
 library(topicmodels)
 
 # load the required objects
+complaints <- readRDS("complaints.rds")
 complaints_sentiments <- readRDS("complaints_sentiments.rds")
 complaints_dtm <- readRDS("complaints_dtm.rds")
 top_terms_2 <- readRDS("top_terms_2.rds")
@@ -117,11 +118,19 @@ shinyServer(function(input, output) {
         
         
         
-        # Sentiment scores in reactive form
+        ## Some reactive function for Sample Analysis
+        
+        # define complaint to work on
+        complaint <- reactive({
+                if(input$radbut == "Own") {input$text}
+                else if(input$radbut == "Random") {
+                        complaints$consumer_complaint_narrative[sample(1:20000, 1)]}
+                else if(input$radbut == "ID") {complaints$consumer_complaint_narrative[input$idno]}
+                })
         
         # create table:
         tab <- reactive({
-                data.frame(id = 21000, complaint = input$text, stringsAsFactors = FALSE)
+                data.frame(id = 21000, complaint = complaint(), stringsAsFactors = FALSE)
         })
         
         # a word unigram list of words excluding stop words
@@ -150,11 +159,11 @@ shinyServer(function(input, output) {
         output$myText <- renderText({
                 
                 # display text again.. maybe cut this out later
-                print(input$text)
+                print(complaint())
                 
         })
         
-        output$myTable <- renderTable({
+        output$myTable <- renderTable(striped = TRUE, digits = 0, {
                 
                 # print a table of positive and negative words
                 mytable <- words_list_sentiment()
@@ -172,7 +181,7 @@ shinyServer(function(input, output) {
                 # print out the percentile
                 percentile <- ecdf(complaints_sentiments$tot_sentiment)
                 target <- percentile(id_scores()$tot_sentiment)
-                print(round(target,4))
+                print(c(round(target*100), 'th percentile'))
         })
         
         
