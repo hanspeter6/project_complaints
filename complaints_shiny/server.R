@@ -15,6 +15,12 @@ top_terms_3 <- readRDS("top_terms_3.rds")
 top_terms_4 <- readRDS("top_terms_4.rds")
 top_terms_5 <- readRDS("top_terms_5.rds")
 
+# setting up my_sentiments object for later use
+my_sentiments <- sentiments %>%
+        filter(lexicon == "bing") %>%
+        mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
+        select(word, sentiment, score)
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
         
@@ -83,23 +89,6 @@ shinyServer(function(input, output) {
         #         
         # })
         
-        # complaints_lda <- reactive({
-        #         set.seed(56)
-        #         LDA(complaints_dtm, k = input$k)
-        # })
-        # 
-        # complaints_topics <- reactive({
-        #         tidy(complaints_lda(), matrix = "beta")%>%
-        #                 group_by(topic) %>%
-        #                 top_n(15, beta) %>%
-        #                 ungroup() %>%
-        #                 arrange(topic, -beta) %>%
-        #                 mutate(term = reorder(term, beta))
-        #         
-        #         
-        # })
-        
-        
         
         output$topicPlot <- renderPlot({
                 
@@ -126,56 +115,64 @@ shinyServer(function(input, output) {
         })
         
         
+        
+        
+        # Sentiment scores in reactive form
+        
+        # create table:
+        tab <- reactive({
+                data.frame(id = 21000, complaint = input$text, stringsAsFactors = FALSE)
+        })
+        
+        # a word unigram list of words excluding stop words
+        my_list <- reactive({
+                unnest_tokens(tab(), output = words, input = complaint, token = "words") %>%
+                filter(!words %in% stopwords(), str_detect(words, "[a-z]"))
+        })
+        
+        # add sentiment score column to the word_list frame
+        words_list_sentiment <- reactive({
+                my_list() %>%
+                left_join(my_sentiments, by = c("words" = "word")) %>%
+                filter(!is.na(sentiment)) %>%
+                group_by(id) %>%
+                mutate(tot_sentiment = sum(score)) %>%
+                ungroup()
+        })
+        
+        id_scores <- reactive({
+                words_list_sentiment() %>%
+                        group_by(id) %>%
+                        summarise(tot_sentiment = mean(tot_sentiment))
+                
+        })
+        
         output$myText <- renderText({
                 
-                # display my textinput
+                # display text again.. maybe cut this out later
                 print(input$text)
                 
         })
         
+        output$myTable <- renderTable({
+                
+                # print a table of positive and negative words
+                mytable <- words_list_sentiment()
+                print(mytable[,c(2,3,4)])
+        })
+        
         output$sentiment <- renderText({
+
+                # print out the total sentiment score
+                print(id_scores()$tot_sentiment)
+        })
+        
+        output$percentile <- renderText({
                 
-                # Sentiment score
-                
-                # create table:
-                tab <- data.frame(id = 21000, complaint = input$text)
-                tab$complaint <- as.character(tab$complaint)
-                
-                # a word unigram list of words
-                my_list <- unnest_tokens(tab, output = words, input = complaint, token = "words")
-                
-                # get rid of stopwords
-                my_list2 <- my_list %>%
-                        filter(!words %in% stopwords(), str_detect(words, "[a-z]"))
-                
-                # add sentiment score column to the word_list frame
-                
-                my_sentiments <- sentiments %>%
-                        filter(lexicon == "bing") %>%
-                        mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
-                        select(word, sentiment, score)
-                
-                words_list_sentiment <- my_list2 %>%
-                        left_join(my_sentiments, by = c("words" = "word")) %>%
-                        filter(!is.na(sentiment)) %>%
-                        group_by(id) %>%
-                        mutate(tot_sentiment = sum(score)) %>%
-                        ungroup()
-                
-                id_scores <- words_list_sentiment %>%
-                        group_by(id) %>%
-                        summarise(tot_sentiment = mean(tot_sentiment))
-                
-                # now want the quantile of the score of the new complaint:
-                
+                # print out the percentile
                 percentile <- ecdf(complaints_sentiments$tot_sentiment)
-                target <- percentile(id_scores$tot_sentiment)
-                
-                out <- c(as.character(id_scores$tot_sentiment), as.character(target))
-                print(out)
-                
-                # now want to get topic probabilities..(gamma) for the my new complaint
-                #  fuck...
+                target <- percentile(id_scores()$tot_sentiment)
+                print(round(target,4))
         })
         
         
