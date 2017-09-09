@@ -57,10 +57,40 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                    tabPanel("Sample Analysis",
                             sidebarLayout(
                                     sidebarPanel(
-                                            textInput(inputId = "text",
+                                            
+                                            checkboxInput(inputId = "own", "Own"),
+                                            
+                                            conditionalPanel(
+                                                    condition = "input.own ==  true",
+                                                    textInput(inputId = "text",
                                                       label = "Write Sample Complaint Here:",
-                                                      width = 'auto'),
+                                                      width = 'auto')),
+                                            
+                                            checkboxInput(inputId = "random", "Random"),
+                                            
+                                            conditionalPanel(
+                                                    condition = "input.random ==  true",
+                                                    textInput(inputId = "text",
+                                                              label = "Do the random thing now",
+                                                              width = 'auto')),
+                                            
+                                            checkboxInput(inputId = "id", "id"),
+                                            
+                                            conditionalPanel(
+                                                    condition = "input.id ==  true",
+                                                    textInput(inputId = "text",
+                                                              label = "ID now...",
+                                                              width = 'auto')),
+                                            
                                             submitButton("Submit")),
+                                            # 
+                                            # conditionalPanel(
+                                            #         condition = "input.random == true",
+                                            #         helpText("Fuck Random")),
+                                            # 
+                                            # conditionalPanel(
+                                            #         conditon = "input.id == true",
+                                            #         helpText("Fuckoff Id"))),
                                     mainPanel(
                                             verbatimTextOutput("myText"),
                                             tableOutput("myTable"),
