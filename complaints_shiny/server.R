@@ -1,3 +1,4 @@
+# load required packages
 library(shiny)
 library(tidyverse)
 library(tidytext)
@@ -9,13 +10,15 @@ library(topicmodels)
 # load the required objects
 complaints_sentiments <- readRDS("complaints_sentiments.rds")
 complaints_dtm <- readRDS("complaints_dtm.rds")
+top_terms_2 <- readRDS("top_terms_2.rds")
+top_terms_3 <- readRDS("top_terms_3.rds")
+top_terms_4 <- readRDS("top_terms_4.rds")
+top_terms_5 <- readRDS("top_terms_5.rds")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
         
         output$histPlot <- renderPlot({
-                
-                # generate histograms of total sentiment created input$product from ui.R
                 
                 # product select
                 if(input$product == "All") {
@@ -39,7 +42,7 @@ shinyServer(function(input, output) {
                 #                 filter(consumer_compensated == FALSE)
                 # }
                 
-                # dealing with date range
+                # date range
                 x <- x %>%
                         filter(date_received > input$dates[1] & date_received < input$dates[2])
                 
@@ -59,26 +62,42 @@ shinyServer(function(input, output) {
         #         
         # })
         
+        # complaints_lda <- reactive({
+        #         set.seed(56)
+        #         LDA(complaints_dtm, k = input$k)
+        # })
+        # 
+        # complaints_topics <- reactive({
+        #         tidy(complaints_lda(), matrix = "beta")%>%
+        #                 group_by(topic) %>%
+        #                 top_n(15, beta) %>%
+        #                 ungroup() %>%
+        #                 arrange(topic, -beta) %>%
+        #                 mutate(term = reorder(term, beta))
+        #         
+        #         
+        # })
         
-        complaints_lda <- reactive({
-                set.seed(56)
-                LDA(complaints_dtm, k = input$k)
-        })
         
-        complaints_topics <- reactive({
-                tidy(complaints_lda(), matrix = "beta")%>%
-                        group_by(topic) %>%
-                        top_n(15, beta) %>%
-                        ungroup() %>%
-                        arrange(topic, -beta) %>%
-                        mutate(term = reorder(term, beta))
-                
-                
-        })
         
         output$topicPlot <- renderPlot({
                 
-                ggplot(complaints_topics(), aes(term, beta, fill = factor(topic))) +
+                # define plot input:
+                if(input$k == 2) {
+                        topicPlot <- top_terms_2
+                }
+                if(input$k == 3) {
+                        topicPlot <- top_terms_3
+                }
+                if(input$k == 4) {
+                        topicPlot <- top_terms_4
+                }
+                if(input$k == 5) {
+                        topicPlot <- top_terms_5
+                }
+                
+                #plot
+                ggplot(topicPlot, aes(term, beta, fill = factor(topic))) +
                         geom_col(show.legend = FALSE) +
                         facet_wrap(~ topic, scales = "free") +
                         coord_flip()

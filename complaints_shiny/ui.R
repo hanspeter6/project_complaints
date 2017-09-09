@@ -9,7 +9,8 @@
 
 library(shiny)
 
-shinyUI(navbarPage("My Application",
+shinyUI(navbarPage("COMPLAINTS ANALYSIS",
+                   inverse = TRUE,
                    tabPanel("Sentiment Analysis",
                             sidebarLayout(
                                     sidebarPanel(
@@ -23,7 +24,7 @@ shinyUI(navbarPage("My Application",
                                                            end = "2016-04-20",
                                                            min = "2015-03-19",
                                                            max = "2016-04-20"),
-                                            submitButton("Apply Changes", icon("refresh"))),
+                                            submitButton("Submit")),
                                     mainPanel(
                                             plotOutput("histPlot")
                                     ))),
@@ -31,13 +32,13 @@ shinyUI(navbarPage("My Application",
                    tabPanel("Topic Analysis",
                             sidebarLayout(
                                     sidebarPanel(
-                                            numericInput(inputId = "k",
+                                            width = 2,
+                                            radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
-                                                         value = 2,
-                                                         min = 2,
-                                                         max = 5,
-                                                         step = 1),
-                                            submitButton("Apply Changes", icon("refresh"))),
+                                                         choices = c(2,3,4,5),
+                                                         selected = 2,
+                                                         inline = FALSE),
+                                            submitButton("Submit")),
                                     mainPanel(
                                             plotOutput("topicPlot")
                                     ))),
@@ -46,9 +47,9 @@ shinyUI(navbarPage("My Application",
                             sidebarLayout(
                                     sidebarPanel(
                                             textInput(inputId = "text",
-                                                      label = "Write your Complaint here:",
+                                                      label = "Write Sample Complaint Here:",
                                                       width = 'auto'),
-                                            submitButton("Apply Changes", icon("refresh"))),
+                                            submitButton("Submit")),
                                     mainPanel(
                                             verbatimTextOutput("myText"),
                                             textOutput("sentiment")
