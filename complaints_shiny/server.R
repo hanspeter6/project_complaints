@@ -7,7 +7,7 @@ library(lubridate)
 library(tm)
 library(topicmodels)
 
-# load the required objects
+# load the required objects now
 complaints <- readRDS("complaints.rds")
 complaints_sentiments <- readRDS("complaints_sentiments.rds")
 complaints_dtm <- readRDS("complaints_dtm.rds")
@@ -27,7 +27,7 @@ shinyServer(function(input, output) {
         
         output$histPlot <- renderPlot({
                 
-                # product select
+                # product select also
                 if(input$product == "All") {
                         x <- complaints_sentiments
                 }
