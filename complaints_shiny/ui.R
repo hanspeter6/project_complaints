@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(plotly)
 
 shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                    inverse = TRUE,
@@ -43,12 +44,17 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          selected = "All",
                                                          inline = TRUE),
                                             
+                                            radioButtons(inputId = "period",
+                                                         label = "Period: ",
+                                                         choices = c("Day", "Month"),
+                                                         inline = TRUE),
+                                            
                                             submitButton("Submit")),
                                     
                                     
                                     mainPanel(
-                                            plotOutput("histPlot"),
-                                            plotOutput("linePlot")
+                                            plotlyOutput("histPlot"),
+                                            plotlyOutput("linePlot")
                                     ))),
                    
                    tabPanel("Topic Analysis",

@@ -6,6 +6,8 @@ library(stringr)
 library(lubridate)
 library(tm)
 library(topicmodels)
+library(plotly)
+library(ggplot2)
 
 # load the required objects now
 complaints_raw <- readRDS("complaints_raw.rds")
@@ -48,37 +50,42 @@ shinyServer(function(input, output) {
                 filter(tot_sentiment != 0) %>%
                 mutate(sentiment = ifelse(tot_sentiment > 0, "positive", "negative"))
         })
-                
-        # histogram of sentiments
-        output$histPlot <- renderPlot({
-                
+        
+        # creating an object based on key inputs (product, compensatin, dates) for 
+        # use in other renders
+        x <- reactive({
                 # product
                 if(input$product == "All") {
-                        x <- df_sentiments()
-                }
+                        a <- df_sentiments()
+                        }
                 else {
-                        x <- df_sentiments() %>%
-                                filter(product == input$product)  
-                }
+                        a <- df_sentiments() %>%
+                                filter(product == input$product)
+                        }
                 
                 # compensation
                 if(input$compensation == "All") {
-                        x <- x
+                        b <- a
                 }
                 else if(input$compensation == "Yes") {
-                        x <- x %>%
+                        b <- a %>%
                                 filter(consumer_compensated == TRUE)
                 }
                 else if(input$compensation == "No") {
-                        x <- x %>%
+                        b <- a %>%
                                 filter(consumer_compensated == FALSE)
                 }
                 
                 # date range
-                x <- x %>%
+                c <- b %>%
                         filter(date_received > input$dates[1] & date_received < input$dates[2])
+                c
+        
+                })
+        
                 
-                # plot
+        # histogram of sentiments
+        output$histPlot <- renderPlotly({
                 
                 # defining bottom title
                 if(input$compensation == "All") {
@@ -111,20 +118,21 @@ shinyServer(function(input, output) {
                         top_title <- "Product: Bank Account or service"
                 }
   
-                ggplot(x, aes(tot_sentiment, fill = sentiment)) + 
+                ggplotly(ggplot(x(), aes(tot_sentiment, fill = sentiment)) + 
                         geom_histogram(binwidth = 1) +
                         xlab(title) +
                         ylab("Complaints") +
                         labs(title = top_title) +
                         scale_fill_discrete(name="sentiment",
                                             labels=c("negative", "positive")) +
-                        xlim(c(-20,20))
+                        xlim(c(-20,20)))
+                
                 
         })
         
         # reactives for lineplot
         for_graph_day <- reactive({
-                df_sentiments() %>%
+                x() %>%
                 mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
                 group_by(date_received) %>%
                 summarise(ave_day = mean(tot_sentiment),
@@ -134,28 +142,31 @@ shinyServer(function(input, output) {
                           sum_day = sum(tot_sentiment))
         })
         
-        # for_graph_month <- reactive({
-        #         df_sentiments() %>%
-        #         mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
-        #         group_by(month) %>%
-        #         summarise(ave_month = mean(tot_sentiment),
-        #                   tot_month = n(),
-        #                   tot_pos = sum(sentiment_number),
-        #                   prop_neg = 1 - tot_pos/tot_month,
-        #                   sum_month = sum(tot_sentiment))
-        # })
+        for_graph_month <- reactive({
+                x() %>%
+                mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
+                group_by(month) %>%
+                summarise(ave_month = mean(tot_sentiment),
+                          tot_month = n(),
+                          tot_pos = sum(sentiment_number),
+                          prop_neg = 1 - tot_pos/tot_month,
+                          sum_month = sum(tot_sentiment))
+        })
         
         # bubble plot
-        output$linePlot <- renderPlot({
+        output$linePlot <- renderPlotly({
                 
+                if(input$period == "Day"){
+                        ggplotly(qplot(date_received, tot_day, col = prop_neg, data = for_graph_day(),
+                      xlab = "Date", ylab = "Total Complaints Received"))
+                        
+                }
                 
-                qplot(date_received, tot_day, size = ave_day, col = prop_neg, data = for_graph_day(),
-                      xlab = "Date", ylab = "Total Complaints Received")
-                
-                # qplot(month, tot_month, size = ave_month, col = prop_neg, data = for_graph_month(),
-                #       xlab = "Date", ylab = "Total Complaints Received")
-
-
+                else if(input$period == "Month") {
+                        ggplotly(qplot(month, tot_month, size = ave_month, col = prop_neg, data = for_graph_month(),
+                              xlab = "Date", ylab = "Total Complaints Received"))
+                        
+                }
 
         })
         
