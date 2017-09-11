@@ -8,35 +8,60 @@ library(tm)
 library(topicmodels)
 
 # load the required objects now
-complaints <- readRDS("complaints.rds")
-complaints_sentiments <- readRDS("complaints_sentiments.rds")
+complaints_raw <- readRDS("complaints_raw.rds")
+complaints_sentiment_negs <- readRDS("complaints_sentiment_negs.rds")
 complaints_dtm <- readRDS("complaints_dtm.rds")
 top_terms_2 <- readRDS("top_terms_2.rds")
 top_terms_3 <- readRDS("top_terms_3.rds")
 top_terms_4 <- readRDS("top_terms_4.rds")
 top_terms_5 <- readRDS("top_terms_5.rds")
 
-# setting up my_sentiments object for later use
-my_sentiments <- sentiments %>%
-        filter(lexicon == "bing") %>%
-        mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
-        select(word, sentiment, score)
+## setting up object for later use
 
-# Define server logic required to draw a histogram
+
 shinyServer(function(input, output) {
         
+        ## setting up reactive objects
+
+        # scoring sentiments' bing lexicon
+        my_sentiments <- reactive ({
+                sentiments %>%
+                filter(lexicon == "bing") %>%
+                mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
+                select(word, sentiment, score)
+        })
+        
+        # tot sentiment per id
+        id_sentiment <- reactive ({
+                complaints_sentiment_negs %>%
+                group_by(id) %>%
+                summarise(tot_sentiment = sum(score))
+        })
+        
+        # target data frame
+        df_sentiments <- reactive ({
+                complaints_sentiment_negs %>%
+                select(-words, - sentiment, -score) %>%
+                group_by(id) %>%
+                filter(row_number() == 1) %>%
+                left_join(id_sentiment()) %>%
+                filter(tot_sentiment != 0) %>%
+                mutate(sentiment = ifelse(tot_sentiment > 0, "positive", "negative"))
+        })
+                
+        # histogram of sentiments
         output$histPlot <- renderPlot({
                 
-                # product select also
+                # product
                 if(input$product == "All") {
-                        x <- complaints_sentiments
+                        x <- df_sentiments()
                 }
                 else {
-                        x <- complaints_sentiments %>%
+                        x <- df_sentiments() %>%
                                 filter(product == input$product)  
                 }
                 
-                # compensation or not
+                # compensation
                 if(input$compensation == "All") {
                         x <- x
                 }
@@ -54,41 +79,85 @@ shinyServer(function(input, output) {
                         filter(date_received > input$dates[1] & date_received < input$dates[2])
                 
                 # plot
+                
+                # defining bottom title
                 if(input$compensation == "All") {
-                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
-                                geom_histogram(binwidth = 2) +
-                                xlab("Total Sentiment") +
-                                ylab("Complaints") +
-                                scale_fill_discrete(name="compensated",
-                                                    labels=c("No", "Yes")) +
-                                xlim(c(-20,20))
+                        title <- "Total Sentiment: Compensations Paid and Not Paid"
                 }
                 else if(input$compensation == "Yes") {
-                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
-                                geom_histogram(binwidth = 2, fill = "#00BFC4") +
-                                xlab("Total Sentiment") +
-                                ylab("Complaints") +
-                                scale_fill_discrete(name="compensated",
-                                                    labels=c("Yes")) +
-                                xlim(c(-20,20))
+                        title <- "Total Sentiments: Compensations Paid" 
                 }
                 else if(input$compensation == "No") {
-                        ggplot(x, aes(tot_sentiment, fill = consumer_compensated)) + 
-                                geom_histogram(binwidth = 2, fill = "#F8766D") +
-                                xlab("Total Sentiment") +
-                                ylab("Complaints") +
-                                scale_fill_discrete(name="compensated",
-                                                    labels=c("No")) +
-                                xlim(c(-20,20))
+                        title <- "Total Sentiments: Compensations Not Paid"
                 }
+                
+                # defining top title
+                if(input$product == "All") {
+                        top_title <- "Products: All"
+                }
+                if(input$product == "Mortgage") {
+                        top_title <- "Product: Mortgages"
+                }
+                if(input$product == "Credit card") {
+                        top_title <- "Product: Credit Cards"
+                }
+                if(input$product == "Debt collection") {
+                        top_title <- "Product: Debt Collections"
+                }
+                if(input$product == "Credit reporting") {
+                        top_title <- "Product: Credit Reporting"
+                }
+                if(input$product == "Bank account or service") {
+                        top_title <- "Product: Bank Account or service"
+                }
+  
+                ggplot(x, aes(tot_sentiment, fill = sentiment)) + 
+                        geom_histogram(binwidth = 1) +
+                        xlab(title) +
+                        ylab("Complaints") +
+                        labs(title = top_title) +
+                        scale_fill_discrete(name="sentiment",
+                                            labels=c("negative", "positive")) +
+                        xlim(c(-20,20))
                 
         })
         
-        # output$linePlot <- renderPlot({
-        #         
-        #         
-        #         
+        # reactives for lineplot
+        for_graph_day <- reactive({
+                df_sentiments() %>%
+                mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
+                group_by(date_received) %>%
+                summarise(ave_day = mean(tot_sentiment),
+                          tot_day = n(),
+                          tot_pos = sum(sentiment_number),
+                          prop_neg = 1 - tot_pos/tot_day,
+                          sum_day = sum(tot_sentiment))
+        })
+        
+        # for_graph_month <- reactive({
+        #         df_sentiments() %>%
+        #         mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
+        #         group_by(month) %>%
+        #         summarise(ave_month = mean(tot_sentiment),
+        #                   tot_month = n(),
+        #                   tot_pos = sum(sentiment_number),
+        #                   prop_neg = 1 - tot_pos/tot_month,
+        #                   sum_month = sum(tot_sentiment))
         # })
+        
+        # bubble plot
+        output$linePlot <- renderPlot({
+                
+                
+                qplot(date_received, tot_day, size = ave_day, col = prop_neg, data = for_graph_day(),
+                      xlab = "Date", ylab = "Total Complaints Received")
+                
+                # qplot(month, tot_month, size = ave_month, col = prop_neg, data = for_graph_month(),
+                #       xlab = "Date", ylab = "Total Complaints Received")
+
+
+
+        })
         
         
         output$topicPlot <- renderPlot({
@@ -124,8 +193,8 @@ shinyServer(function(input, output) {
         complaint <- reactive({
                 if(input$radbut == "Own") {input$text}
                 else if(input$radbut == "Random") {
-                        complaints$consumer_complaint_narrative[sample(1:20000, 1)]}
-                else if(input$radbut == "ID") {complaints$consumer_complaint_narrative[input$idno]}
+                        complaints_raw$consumer_complaint_narrative[sample(1:20000, 1)]}
+                else if(input$radbut == "ID") {complaints_raw$consumer_complaint_narrative[input$idno]}
                 })
         
         # create table:

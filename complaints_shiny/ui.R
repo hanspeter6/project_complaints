@@ -47,7 +47,8 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     
                                     
                                     mainPanel(
-                                            plotOutput("histPlot")
+                                            plotOutput("histPlot"),
+                                            plotOutput("linePlot")
                                     ))),
                    
                    tabPanel("Topic Analysis",
@@ -67,6 +68,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          selected = 2,
                                                          inline = TRUE),
                                             submitButton("Submit")),
+                                    
                                     mainPanel(
                                             plotOutput("topicPlot")
                                     ))),
