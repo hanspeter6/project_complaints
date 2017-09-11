@@ -83,7 +83,8 @@ shinyServer(function(input, output) {
         
                 })
         
-                
+        ## SENTIMENT ANALYSIS
+        
         # histogram of sentiments
         output$histPlot <- renderPlotly({
                 
@@ -170,6 +171,7 @@ shinyServer(function(input, output) {
 
         })
         
+        ## TOPIC ANALYSIS
         
         output$topicPlot <- renderPlot({
                 
@@ -195,12 +197,9 @@ shinyServer(function(input, output) {
                 
         })
         
+        ## SAMPLE ANALYSIS
         
-        
-        
-        ## Some reactive function for Sample Analysis
-        
-        # define complaint to work on
+        # define specific complaint to work on
         complaint <- reactive({
                 if(input$radbut == "Own") {input$text}
                 else if(input$radbut == "Random") {
@@ -222,7 +221,7 @@ shinyServer(function(input, output) {
         # add sentiment score column to the word_list frame
         words_list_sentiment <- reactive({
                 my_list() %>%
-                left_join(my_sentiments, by = c("words" = "word")) %>%
+                left_join(my_sentiments(), by = c("words" = "word")) %>%
                 filter(!is.na(sentiment)) %>%
                 group_by(id) %>%
                 mutate(tot_sentiment = sum(score)) %>%
@@ -253,7 +252,7 @@ shinyServer(function(input, output) {
         output$sentiment <- renderText({
 
                 # print out the total sentiment score
-                print(id_scores()$tot_sentiment)
+                print(c('Total Sentiment Score', id_scores()$tot_sentiment))
         })
         
         output$percentile <- renderText({
@@ -261,7 +260,7 @@ shinyServer(function(input, output) {
                 # print out the percentile
                 percentile <- ecdf(complaints_sentiments$tot_sentiment)
                 target <- percentile(id_scores()$tot_sentiment)
-                print(c(round(target*100), 'th percentile'))
+                print(c('Percentile: ', round(target*100)))
         })
         
         

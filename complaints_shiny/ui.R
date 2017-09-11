@@ -102,9 +102,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                      mainPanel(
                                             verbatimTextOutput("myText"),
                                             tableOutput("myTable"),
-                                            h5("Total Sentiment Score:"),
                                             textOutput("sentiment"),
-                                            h5("Percentile:"),
                                             textOutput("percentile")
                                     )))
 ))
