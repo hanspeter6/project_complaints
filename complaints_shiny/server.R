@@ -12,11 +12,14 @@ library(ggplot2)
 # load the required objects now
 complaints_raw <- readRDS("complaints_raw.rds")
 complaints_sentiment_negs <- readRDS("complaints_sentiment_negs.rds")
-complaints_dtm <- readRDS("complaints_dtm.rds")
-top_terms_2 <- readRDS("top_terms_2.rds")
-top_terms_3 <- readRDS("top_terms_3.rds")
-top_terms_4 <- readRDS("top_terms_4.rds")
-top_terms_5 <- readRDS("top_terms_5.rds")
+
+complaints_tdf <- readRDS("complaints_tdf.rds")
+
+# complaints_dtm <- readRDS("complaints_dtm.rds")
+# top_terms_2 <- readRDS("top_terms_2.rds")
+# top_terms_3 <- readRDS("top_terms_3.rds")
+# top_terms_4 <- readRDS("top_terms_4.rds")
+# top_terms_5 <- readRDS("top_terms_5.rds")
 
 ## setting up object for later use
 
@@ -173,20 +176,79 @@ shinyServer(function(input, output) {
         
         ## TOPIC ANALYSIS
         
+        complaints_dtm <- reactive({
+                complaints_tdf %>%
+                filter(id %in% x()$id) %>%
+                cast_dtm(id, words, n)
+        })
+        
+        complaints_lda_2 <- reactive({
+                set.seed(56)
+                LDA(complaints_dtm(), k = 2)
+        })
+        
+        complaints_lda_3 <- reactive({
+                set.seed(56)
+                LDA(complaints_dtm(), k = 3)
+        })
+        
+        complaints_lda_4 <- reactive({
+                set.seed(56)
+                LDA(complaints_dtm(), k = 4)
+        })
+        
+        complaints_lda_5 <- reactive({
+                set.seed(56)
+                LDA(complaints_dtm(), k = 5)
+        })
+        
+        top_terms_2 <- reactive({
+                tidy(complaints_lda_2(), matrix = "beta") %>%
+                        group_by(topic) %>%
+                        top_n(15, beta) %>%
+                        ungroup() %>%
+                        arrange(topic, -beta) %>%
+                        mutate(term = reorder(term, beta))
+        })
+        top_terms_3 <- reactive({
+                tidy(complaints_lda_3(), matrix = "beta") %>%
+                        group_by(topic) %>%
+                        top_n(15, beta) %>%
+                        ungroup() %>%
+                        arrange(topic, -beta) %>%
+                        mutate(term = reorder(term, beta))
+        })
+        top_terms_4 <- reactive({
+                tidy(complaints_lda_4(), matrix = "beta") %>%
+                        group_by(topic) %>%
+                        top_n(15, beta) %>%
+                        ungroup() %>%
+                        arrange(topic, -beta) %>%
+                        mutate(term = reorder(term, beta))
+        })
+        top_terms_5 <- reactive({
+                tidy(complaints_lda_5(), matrix = "beta") %>%
+                        group_by(topic) %>%
+                        top_n(15, beta) %>%
+                        ungroup() %>%
+                        arrange(topic, -beta) %>%
+                        mutate(term = reorder(term, beta))
+        })
+
         output$topicPlot <- renderPlot({
                 
                 # define plot input:
                 if(input$k == 2) {
-                        topicPlot <- top_terms_2
+                        topicPlot <- top_terms_2()
                 }
                 if(input$k == 3) {
-                        topicPlot <- top_terms_3
+                        topicPlot <- top_terms_3()
                 }
                 if(input$k == 4) {
-                        topicPlot <- top_terms_4
+                        topicPlot <- top_terms_4()
                 }
                 if(input$k == 5) {
-                        topicPlot <- top_terms_5
+                        topicPlot <- top_terms_5()
                 }
                 
                 #plot
@@ -205,22 +267,46 @@ shinyServer(function(input, output) {
                 else if(input$radbut == "Random") {
                         complaints_raw$consumer_complaint_narrative[sample(1:20000, 1)]}
                 else if(input$radbut == "ID") {complaints_raw$consumer_complaint_narrative[input$idno]}
-                })
-        
-        # create table:
-        tab <- reactive({
-                data.frame(id = 21000, complaint = complaint(), stringsAsFactors = FALSE)
         })
         
-        # a word unigram list of words excluding stop words
-        my_list <- reactive({
-                unnest_tokens(tab(), output = words, input = complaint, token = "words") %>%
-                filter(!words %in% stopwords(), str_detect(words, "[a-z]"))
+        ## clean and create wordlist for use in sentiment and topic analysis
+        
+        # replace non-alphabetical characters with space
+        complaint_clean <- reactive({
+                complaint() %>%
+                        str_replace_all("[^A-Za-z]", " ") %>%
+                        str_replace_all("X", "")
+        })
+        
+        # create a table for use in unnest_tokens, ensuring 
+        tab_sample <- reactive({
+                data.frame(id = 21000, complaint = complaint_clean(), stringsAsFactors = FALSE)
+        })
+
+        # then a word unigram list of words, getting rid of stopwords
+        sample_list <- reactive({
+                unnest_tokens(tab_sample(), output = words, input = complaint, token = "words") %>%
+                filter(!words %in% stopwords(), str_detect(words, "[a-z]")) %>%
+                filter(!words %in% c("etc", "re", letters))
+        })
+        
+        # create tdf:
+        complaint_sample_tdf <- reactive({
+                sample_list() %>%
+                group_by(id, words) %>%
+                count() %>%
+                ungroup()
+        })
+        
+        # create doc term matrix
+        complaint_sample_dtm <- reactive({
+                complaint_sample_tdf() %>%
+                cast_dtm(id, words, n)
         })
         
         # add sentiment score column to the word_list frame
         words_list_sentiment <- reactive({
-                my_list() %>%
+                sample_list() %>%
                 left_join(my_sentiments(), by = c("words" = "word")) %>%
                 filter(!is.na(sentiment)) %>%
                 group_by(id) %>%
@@ -252,15 +338,39 @@ shinyServer(function(input, output) {
         output$sentiment <- renderText({
 
                 # print out the total sentiment score
-                print(c('Total Sentiment Score', id_scores()$tot_sentiment))
+                print(id_scores()$tot_sentiment)
         })
         
         output$percentile <- renderText({
                 
                 # print out the percentile
-                percentile <- ecdf(complaints_sentiments$tot_sentiment)
+                percentile <- ecdf(df_sentiments()$tot_sentiment)
                 target <- percentile(id_scores()$tot_sentiment)
-                print(c('Percentile: ', round(target*100)))
+                print(round(target*100))
+        })
+        
+        output$gammas <- renderTable(digits = 2, {
+                
+                # identify lda object for k = no of topics
+                if(input$k == 2) {
+                        lda <- complaints_lda_2()
+                }
+                if(input$k == 3) {
+                        lda <- complaints_lda_3()
+                }
+                if(input$k == 4) {
+                        lda <- complaints_lda_4()
+                }
+                if(input$k == 5) {
+                        lda <- complaints_lda_5()
+                }
+                
+                # 
+                ts <- posterior(lda, complaint_sample_dtm())
+                q <- data.frame(Topic = 1:input$k, Proportion = ts[[2]][1,])
+                print(q)
+                
+                
         })
         
         

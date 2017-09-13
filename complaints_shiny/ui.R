@@ -83,9 +83,11 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     sidebarPanel(
                                             
+                                            h4("INPUTS"),
+                                            
                                             radioButtons(inputId = "radbut",
-                                                         label = "Select Sampling",
-                                                         choices = c("ID", "Random", "Own"),
+                                                         label = "Sampling Method",
+                                                         choices = c("Random", "ID", "Own"),
                                                          inline = TRUE),
                                             
                                             textInput(inputId = "text",
@@ -97,13 +99,20 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          max = 20000,
                                                          value = 5),
 
-                                            submitButton("Submit")),
+                                            submitButton("Submit"),
+                                            
+                                            h4("SUMMARY RESULTS"),
+
+                                            textOutput("sentiment"),
+                                            
+                                            textOutput("percentile"),
+                                            
+                                            h3("Topic Probabilities"),
+                                            tableOutput("gammas")),
                                             
                                      mainPanel(
                                             verbatimTextOutput("myText"),
-                                            tableOutput("myTable"),
-                                            textOutput("sentiment"),
-                                            textOutput("percentile")
+                                            tableOutput("myTable")
                                     )))
 ))
 
