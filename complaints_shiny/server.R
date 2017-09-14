@@ -27,31 +27,31 @@ complaints_tdf <- readRDS("complaints_tdf.rds")
 shinyServer(function(input, output) {
         
         ## setting up reactive objects
-
+        
         # scoring sentiments' bing lexicon
         my_sentiments <- reactive ({
                 sentiments %>%
-                filter(lexicon == "bing") %>%
-                mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
-                select(word, sentiment, score)
+                        filter(lexicon == "bing") %>%
+                        mutate(score = ifelse(sentiment == "positive", 1, -1)) %>%
+                        select(word, sentiment, score)
         })
         
         # tot sentiment per id
         id_sentiment <- reactive ({
                 complaints_sentiment_negs %>%
-                group_by(id) %>%
-                summarise(tot_sentiment = sum(score))
+                        group_by(id) %>%
+                        summarise(tot_sentiment = sum(score))
         })
         
         # target data frame
         df_sentiments <- reactive ({
                 complaints_sentiment_negs %>%
-                select(-words, - sentiment, -score) %>%
-                group_by(id) %>%
-                filter(row_number() == 1) %>%
-                left_join(id_sentiment()) %>%
-                filter(tot_sentiment != 0) %>%
-                mutate(sentiment = ifelse(tot_sentiment > 0, "positive", "negative"))
+                        select(-words, - sentiment, -score) %>%
+                        group_by(id) %>%
+                        filter(row_number() == 1) %>%
+                        left_join(id_sentiment()) %>%
+                        filter(tot_sentiment != 0) %>%
+                        mutate(sentiment = ifelse(tot_sentiment > 0, "positive", "negative"))
         })
         
         # creating an object based on key inputs (product, compensatin, dates) for 
@@ -60,14 +60,14 @@ shinyServer(function(input, output) {
                 # product
                 if(input$product == "All") {
                         a <- df_sentiments()
-                        }
+                }
                 else {
                         a <- df_sentiments() %>%
                                 filter(product == input$product)
-                        }
+                }
                 
                 # compensation
-                if(input$compensation == "All") {
+                if(input$compensation == "Yes & No") {
                         b <- a
                 }
                 else if(input$compensation == "Yes") {
@@ -83,8 +83,8 @@ shinyServer(function(input, output) {
                 c <- b %>%
                         filter(date_received > input$dates[1] & date_received < input$dates[2])
                 c
-        
-                })
+                
+        })
         
         ## SENTIMENT ANALYSIS
         
@@ -92,7 +92,7 @@ shinyServer(function(input, output) {
         output$histPlot <- renderPlotly({
                 
                 # defining bottom title
-                if(input$compensation == "All") {
+                if(input$compensation == "Yes & No") {
                         title <- "Total Sentiment: Compensations Paid and Not Paid"
                 }
                 else if(input$compensation == "Yes") {
@@ -121,15 +121,15 @@ shinyServer(function(input, output) {
                 if(input$product == "Bank account or service") {
                         top_title <- "Product: Bank Account or service"
                 }
-  
+                
                 ggplotly(ggplot(x(), aes(tot_sentiment, fill = sentiment)) + 
-                        geom_histogram(binwidth = 1) +
-                        xlab(title) +
-                        ylab("Complaints") +
-                        labs(title = top_title) +
-                        scale_fill_discrete(name="sentiment",
-                                            labels=c("negative", "positive")) +
-                        xlim(c(-20,20)))
+                                 geom_histogram(binwidth = 1) +
+                                 xlab(title) +
+                                 ylab("Complaints") +
+                                 labs(title = top_title) +
+                                 scale_fill_discrete(name="sentiment",
+                                                     labels=c("negative", "positive")) +
+                                 xlim(c(-20,20)))
                 
                 
         })
@@ -137,24 +137,24 @@ shinyServer(function(input, output) {
         # reactives for lineplot
         for_graph_day <- reactive({
                 x() %>%
-                mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
-                group_by(date_received) %>%
-                summarise(ave_day = mean(tot_sentiment),
-                          tot_day = n(),
-                          tot_pos = sum(sentiment_number),
-                          prop_neg = 1 - tot_pos/tot_day,
-                          sum_day = sum(tot_sentiment))
+                        mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
+                        group_by(date_received) %>%
+                        summarise(ave_day = mean(tot_sentiment),
+                                  tot_day = n(),
+                                  tot_pos = sum(sentiment_number),
+                                  prop_neg = 1 - tot_pos/tot_day,
+                                  sum_day = sum(tot_sentiment))
         })
         
         for_graph_month <- reactive({
                 x() %>%
-                mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
-                group_by(month) %>%
-                summarise(ave_month = mean(tot_sentiment),
-                          tot_month = n(),
-                          tot_pos = sum(sentiment_number),
-                          prop_neg = 1 - tot_pos/tot_month,
-                          sum_month = sum(tot_sentiment))
+                        mutate(sentiment_number = ifelse(sentiment == "positive", 1, 0)) %>%
+                        group_by(month) %>%
+                        summarise(ave_month = mean(tot_sentiment),
+                                  tot_month = n(),
+                                  tot_pos = sum(sentiment_number),
+                                  prop_neg = 1 - tot_pos/tot_month,
+                                  sum_month = sum(tot_sentiment))
         })
         
         # bubble plot
@@ -162,24 +162,24 @@ shinyServer(function(input, output) {
                 
                 if(input$period == "Day"){
                         ggplotly(qplot(date_received, tot_day, col = prop_neg, data = for_graph_day(),
-                      xlab = "Date", ylab = "Total Complaints Received"))
+                                       xlab = "Date", ylab = "Total Complaints Received"))
                         
                 }
                 
                 else if(input$period == "Month") {
                         ggplotly(qplot(month, tot_month, size = ave_month, col = prop_neg, data = for_graph_month(),
-                              xlab = "Date", ylab = "Total Complaints Received"))
+                                       xlab = "Date", ylab = "Total Complaints Received"))
                         
                 }
-
+                
         })
         
         ## TOPIC ANALYSIS
         
         complaints_dtm <- reactive({
                 complaints_tdf %>%
-                filter(id %in% x()$id) %>%
-                cast_dtm(id, words, n)
+                        filter(id %in% x()$id) %>%
+                        cast_dtm(id, words, n)
         })
         
         complaints_lda_2 <- reactive({
@@ -234,7 +234,8 @@ shinyServer(function(input, output) {
                         arrange(topic, -beta) %>%
                         mutate(term = reorder(term, beta))
         })
-
+        
+        
         output$topicPlot <- renderPlot({
                 
                 # define plot input:
@@ -259,6 +260,25 @@ shinyServer(function(input, output) {
                 
         })
         
+        
+        output$prod <- renderText({
+                paste("Product: ",
+                      input$product)
+        })
+        
+        output$dateRangeText  <- renderText({
+                paste("Date Range: ", 
+                      paste(as.character(input$dates), collapse = " to ")
+                )
+        })
+        
+        output$comp <- renderText({
+                paste("Compensation Paid: ",
+                      input$compensation)
+        })
+        
+        
+        
         ## SAMPLE ANALYSIS
         
         # define specific complaint to work on
@@ -282,36 +302,36 @@ shinyServer(function(input, output) {
         tab_sample <- reactive({
                 data.frame(id = 21000, complaint = complaint_clean(), stringsAsFactors = FALSE)
         })
-
+        
         # then a word unigram list of words, getting rid of stopwords
         sample_list <- reactive({
                 unnest_tokens(tab_sample(), output = words, input = complaint, token = "words") %>%
-                filter(!words %in% stopwords(), str_detect(words, "[a-z]")) %>%
-                filter(!words %in% c("etc", "re", letters))
+                        filter(!words %in% stopwords(), str_detect(words, "[a-z]")) %>%
+                        filter(!words %in% c("etc", "re", letters))
         })
         
         # create tdf:
         complaint_sample_tdf <- reactive({
                 sample_list() %>%
-                group_by(id, words) %>%
-                count() %>%
-                ungroup()
+                        group_by(id, words) %>%
+                        count() %>%
+                        ungroup()
         })
         
         # create doc term matrix
         complaint_sample_dtm <- reactive({
                 complaint_sample_tdf() %>%
-                cast_dtm(id, words, n)
+                        cast_dtm(id, words, n)
         })
         
         # add sentiment score column to the word_list frame
         words_list_sentiment <- reactive({
                 sample_list() %>%
-                left_join(my_sentiments(), by = c("words" = "word")) %>%
-                filter(!is.na(sentiment)) %>%
-                group_by(id) %>%
-                mutate(tot_sentiment = sum(score)) %>%
-                ungroup()
+                        left_join(my_sentiments(), by = c("words" = "word")) %>%
+                        filter(!is.na(sentiment)) %>%
+                        group_by(id) %>%
+                        mutate(tot_sentiment = sum(score)) %>%
+                        ungroup()
         })
         
         id_scores <- reactive({
@@ -336,7 +356,7 @@ shinyServer(function(input, output) {
         })
         
         output$sentiment <- renderText({
-
+                
                 # print out the total sentiment score
                 print(id_scores()$tot_sentiment)
         })

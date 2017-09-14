@@ -40,8 +40,8 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             
                                             radioButtons(inputId = "compensation",
                                                          label = "Compensation Paid:",
-                                                         choices = c("All", "Yes", "No"),
-                                                         selected = "All",
+                                                         choices = c("Yes & No", "Yes", "No"),
+                                                         selected = "Yes & No",
                                                          inline = TRUE),
                                             
                                             radioButtons(inputId = "period",
@@ -67,6 +67,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h6("blah blah"),
                                             h4(" How it works"),
                                             h6("blah, blah"),
+                                          
                                             
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
@@ -76,7 +77,11 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             submitButton("Submit")),
                                     
                                     mainPanel(
-                                            plotOutput("topicPlot")
+                                            
+                                            plotOutput("topicPlot"),
+                                            verbatimTextOutput("prod"),
+                                            verbatimTextOutput("dateRangeText"),
+                                            verbatimTextOutput("comp")
                                     ))),
                    
                    tabPanel("Sample Analysis",
@@ -84,6 +89,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     sidebarPanel(
                                             
                                             h4("INPUTS"),
+
                                             
                                             radioButtons(inputId = "radbut",
                                                          label = "Sampling Method",
@@ -98,21 +104,21 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          min = 1,
                                                          max = 20000,
                                                          value = 5),
-
+                                            
                                             submitButton("Submit"),
                                             
                                             h4("SUMMARY RESULTS"),
-
+                                            
                                             textOutput("sentiment"),
                                             
                                             textOutput("percentile"),
                                             
                                             h3("Topic Probabilities"),
                                             tableOutput("gammas")),
-                                            
-                                     mainPanel(
+                                    
+                                    mainPanel(
                                             verbatimTextOutput("myText"),
                                             tableOutput("myTable")
                                     )))
-))
+                            ))
 
