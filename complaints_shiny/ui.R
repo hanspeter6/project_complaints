@@ -68,20 +68,21 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h4(" How it works"),
                                             h6("blah, blah"),
                                           
-                                            
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
                                                          choices = c(2,3,4,5),
                                                          selected = 2,
                                                          inline = TRUE),
+                                            
                                             submitButton("Submit")),
-                                    
+                                                
                                     mainPanel(
                                             
                                             plotOutput("topicPlot"),
                                             verbatimTextOutput("prod"),
                                             verbatimTextOutput("dateRangeText"),
-                                            verbatimTextOutput("comp")
+                                            verbatimTextOutput("comp"),
+                                            plotOutput("biPlot")
                                     ))),
                    
                    tabPanel("Sample Analysis",

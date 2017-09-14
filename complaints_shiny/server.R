@@ -12,18 +12,9 @@ library(ggplot2)
 # load the required objects now
 complaints_raw <- readRDS("complaints_raw.rds")
 complaints_sentiment_negs <- readRDS("complaints_sentiment_negs.rds")
-
 complaints_tdf <- readRDS("complaints_tdf.rds")
 
-# complaints_dtm <- readRDS("complaints_dtm.rds")
-# top_terms_2 <- readRDS("top_terms_2.rds")
-# top_terms_3 <- readRDS("top_terms_3.rds")
-# top_terms_4 <- readRDS("top_terms_4.rds")
-# top_terms_5 <- readRDS("top_terms_5.rds")
-
-## setting up object for later use
-
-
+# server functions
 shinyServer(function(input, output) {
         
         ## setting up reactive objects
@@ -275,6 +266,77 @@ shinyServer(function(input, output) {
         output$comp <- renderText({
                 paste("Compensation Paid: ",
                       input$compensation)
+        })
+        
+        
+        # biplots
+        
+        beta_spread_2 <- reactive({
+                complaints_lda_2() %>%
+                        tidy(matrix = "beta") %>%
+                        mutate(topic = paste0("topic", topic)) %>%
+                        spread(topic, beta)
+                
+        })
+        
+        beta_spread_3 <- reactive({
+                complaints_lda_3() %>%
+                        tidy(matrix = "beta") %>%
+                        mutate(topic = paste0("topic", topic)) %>%
+                        spread(topic, beta)
+                
+        })
+        
+        beta_spread_4 <- reactive({
+                complaints_lda_4() %>%
+                        tidy(matrix = "beta") %>%
+                        mutate(topic = paste0("topic", topic)) %>%
+                        spread(topic, beta)
+                
+        })
+        
+        beta_spread_5 <- reactive({
+                complaints_lda_5() %>%
+                        tidy(matrix = "beta") %>%
+                        mutate(topic = paste0("topic", topic)) %>%
+                        spread(topic, beta)
+                
+        })
+        
+        
+        output$biPlot <- renderPlot({
+                
+                # now need to select two topics eg topic 2, topic 3:
+                
+        
+                
+                # and set up graph dataset
+                
+                
+                
+                input <- c(paste0("topic", 1), paste0("topic", 2))
+                
+                topic_pairs_df <- beta_spread_2() %>%
+                        select(term, input[1], input[2])
+                
+                bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
+                
+                log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
+                
+                pairs <- bigBeta %>%
+                        mutate(log_ratio = log_ratio[,1]) %>%
+                        group_by(direction = log_ratio > 0) %>%
+                        top_n(10, abs(log_ratio)) %>%
+                        ungroup() %>%
+                        mutate(term = reorder(term, log_ratio))
+                
+                # and plot it
+                ggplot(pairs, aes(term, log_ratio)) +
+                        geom_col() +
+                        labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
+                        coord_flip()
+                
+        
         })
         
         
