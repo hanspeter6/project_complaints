@@ -303,10 +303,20 @@ shinyServer(function(input, output) {
                 
         })
         
+        output$allPairs <- renderUI({
+                t <- combinat::combn2(1:input$k)
+                v <- vector()
+                for(i in 1: nrow(t)) {
+                        c <- as.character(t[i,])
+                        cvec <- paste("Topics", c[1], "&", c[2])
+                        v <- append(v, cvec)
+                }
+                radioButtons("pairs", "Choose Topic Pair", v)
+        })
         
         output$biPlot <- renderPlot({
                 
-                # now need to select two topics eg topic 2, topic 3:
+                # now need to select two topics eg topic 1, topic 2:
                 
         
                 

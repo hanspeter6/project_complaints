@@ -74,7 +74,14 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          selected = 2,
                                                          inline = TRUE),
                                             
-                                            submitButton("Submit")),
+                                            h3("try tester"),
+                                            
+                                            uiOutput("allPairs"),
+                                            
+                                            submitButton("Apply Changes")
+                                            
+                                            ),
+                                            
                                                 
                                     mainPanel(
                                             
