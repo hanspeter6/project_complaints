@@ -113,13 +113,12 @@ shinyServer(function(input, output) {
                         top_title <- "Product: Bank Account or service"
                 }
                 
-                ggplotly(ggplot(x(), aes(tot_sentiment, fill = sentiment)) + 
+                ggplotly(ggplot(x(), aes(tot_sentiment, fill = product)) + 
                                  geom_histogram(binwidth = 1) +
                                  xlab(title) +
                                  ylab("Complaints") +
                                  labs(title = top_title) +
-                                 scale_fill_discrete(name="sentiment",
-                                                     labels=c("negative", "positive")) +
+                                 scale_fill_discrete(name="product") +
                                  xlim(c(-20,20)))
                 
                 
@@ -308,7 +307,7 @@ shinyServer(function(input, output) {
                 v <- vector()
                 for(i in 1: nrow(t)) {
                         c <- as.character(t[i,])
-                        cvec <- paste("Topics", c[1], "&", c[2])
+                        cvec <- paste(c[1], "&", c[2])
                         v <- append(v, cvec)
                 }
                 radioButtons("pairs", "Choose Topic Pair", v)
@@ -316,40 +315,78 @@ shinyServer(function(input, output) {
         
         output$biPlot <- renderPlot({
                 
-                # now need to select two topics eg topic 1, topic 2:
+                if(input$k == 2) {
+                        pairs_input <- c(paste0("topic", 1), paste0("topic", 2))
+                        
+                        topic_pairs_df <- beta_spread_2() %>%
+                                        select(term, pairs_input[1], pairs_input[2])
+                        
+                        bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
+                        
+                        log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
+                        
+                        prs <- bigBeta %>%
+                                mutate(log_ratio = log_ratio[,1]) %>%
+                                group_by(direction = log_ratio > 0) %>%
+                                top_n(10, abs(log_ratio)) %>%
+                                ungroup() %>%
+                                mutate(term = reorder(term, log_ratio))
+                        
+                        # and plot it
+                        ggplot(prs, aes(term, log_ratio)) +
+                                geom_col() +
+                                labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
+                                coord_flip() 
+                        }
+                else {
                 
-        
                 
-                # and set up graph dataset
-                
-                
-                
-                input <- c(paste0("topic", 1), paste0("topic", 2))
-                
-                topic_pairs_df <- beta_spread_2() %>%
-                        select(term, input[1], input[2])
-                
-                bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
-                
-                log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
-                
-                pairs <- bigBeta %>%
-                        mutate(log_ratio = log_ratio[,1]) %>%
-                        group_by(direction = log_ratio > 0) %>%
-                        top_n(10, abs(log_ratio)) %>%
-                        ungroup() %>%
-                        mutate(term = reorder(term, log_ratio))
-                
-                # and plot it
-                ggplot(pairs, aes(term, log_ratio)) +
-                        geom_col() +
-                        labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
-                        coord_flip()
-                
+                        # identify two topic numbers from radioButtons:
+                        first <- str_extract(input$pairs, "\\d")
+                        second <- str_extract(input$pairs, "\\d$")
+                        
+                        # and set up graph dataset
+                        pairs_input <- c(paste0("topic", first), paste0("topic", second))
+                        
+                        
+                        if(input$k == 2) {
+                                topic_pairs_df <- beta_spread_2() %>%
+                                        select(term, pairs_input[1], pairs_input[2])
+                        }
+                        
+                        if(input$k == 3) {
+                                topic_pairs_df <- beta_spread_3() %>%
+                                        select(term, pairs_input[1], pairs_input[2])
+                        }
+                        if(input$k == 4) {
+                                topic_pairs_df <- beta_spread_4() %>%
+                                        select(term, pairs_input[1], pairs_input[2])
+                        }
+                        if(input$k == 5) {
+                                topic_pairs_df <- beta_spread_5() %>%
+                                        select(term, pairs_input[1], pairs_input[2])
+                        }
+                        
+                        bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
+                        
+                        log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
+                        
+                        prs <- bigBeta %>%
+                                mutate(log_ratio = log_ratio[,1]) %>%
+                                group_by(direction = log_ratio > 0) %>%
+                                top_n(10, abs(log_ratio)) %>%
+                                ungroup() %>%
+                                mutate(term = reorder(term, log_ratio))
+                        
+                        # and plot it
+                        ggplot(prs, aes(term, log_ratio)) +
+                                geom_col() +
+                                labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
+                                coord_flip()
+                }
+
         
         })
-        
-        
         
         ## SAMPLE ANALYSIS
         
