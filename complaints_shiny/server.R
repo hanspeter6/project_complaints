@@ -319,7 +319,7 @@ shinyServer(function(input, output) {
                         pairs_input <- c(paste0("topic", 1), paste0("topic", 2))
                         
                         topic_pairs_df <- beta_spread_2() %>%
-                                        select(term, pairs_input[1], pairs_input[2])
+                                select(term, pairs_input[1], pairs_input[2])
                         
                         bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
                         
@@ -337,10 +337,10 @@ shinyServer(function(input, output) {
                                 geom_col() +
                                 labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
                                 coord_flip() 
-                        }
+                }
                 else {
-                
-                
+                        
+                        
                         # identify two topic numbers from radioButtons:
                         first <- str_extract(input$pairs, "\\d")
                         second <- str_extract(input$pairs, "\\d$")
@@ -384,8 +384,8 @@ shinyServer(function(input, output) {
                                 labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
                                 coord_flip()
                 }
-
-        
+                
+                
         })
         
         ## SAMPLE ANALYSIS
@@ -394,7 +394,7 @@ shinyServer(function(input, output) {
         complaint <- reactive({
                 if(input$radbut == "Own") {input$text}
                 else if(input$radbut == "Random") {
-                        complaints_raw$consumer_complaint_narrative[sample(1:20000, 1)]}
+                        complaints_raw$consumer_complaint_narrative[sample(x()$id, 1)]}
                 else if(input$radbut == "ID") {complaints_raw$consumer_complaint_narrative[input$idno]}
         })
         

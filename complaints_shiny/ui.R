@@ -67,7 +67,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h6("blah blah"),
                                             h4(" How it works"),
                                             h6("blah, blah"),
-                                          
+                                            
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
                                                          choices = c(2,3,4,5),
@@ -80,9 +80,9 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             
                                             submitButton("Apply Changes")
                                             
-                                            ),
-                                            
-                                                
+                                    ),
+                                    
+                                    
                                     mainPanel(
                                             
                                             plotOutput("topicPlot"),
@@ -97,7 +97,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     sidebarPanel(
                                             
                                             h4("INPUTS"),
-
+                                            
                                             
                                             radioButtons(inputId = "radbut",
                                                          label = "Sampling Method",
