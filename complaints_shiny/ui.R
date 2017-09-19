@@ -20,7 +20,7 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             
                                             h4("Documentation"),
                                             helpText("This section reflects relative sentiments
-                                               of complaints related to various products etc..."),
+                                                     of complaints related to various products etc..."),
                                             h4("How it works"),
                                             h6("A user can select any or all the products shown in the
                                                drop down menu selection below. A change in the graphic will only reflect
@@ -69,14 +69,14 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             
                                             h4("DESCRIPTION"),
                                             
-                                            # helpText("In this section between two and five topics can be considered.
-                                            #          The algorithm that is applied to the dataset that
-                                            #          has been filtered in the 'Sentiment Analysis' section is the
-                                            #          Latent Deriche Allocation (LDA), which generates term topic probabilities (betas)
-                                            #          as well as document topic proportions (gammas)."),
-                                            # helpText("The first plot shows the top 15 terms per topic as per the term topic proportions (beta)"),
-                                            # helpText("The second plot reflects the log2 ratios of two topics that can be selected in the menu below. 
-                                            #          For greater readablity, the ratios have been applied only to beta values > 0.007."),
+                                            helpText("In this section between two and five topics can be considered.
+                                                     The algorithm that is applied to the dataset that
+                                                     has been filtered in the 'Sentiment Analysis' section is the
+                                                     Latent Deriche Allocation (LDA), which generates term topic probabilities (betas)
+                                                     as well as document topic proportions (gammas)."),
+                                            helpText("The first plot shows the top 15 terms per topic as per the term topic proportions (beta)"),
+                                            helpText("The second plot reflects the log2 ratios of two topics that can be selected in the menu below.
+                                                     For greater readablity, the ratios have been applied only to beta values > 0.007."),
                                             
                                             h6("_________________________________________________________"),
                                             
@@ -121,55 +121,55 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     sidebarPanel(
                                             
                                             h4("DESCRIPTION"),
-                                            # 
-                                            # helpText("In this section you can explore particular
-                                            #    complaints."),
-                                            # 
-                                            # helpText("The complaint is reproduced and the sentiment
-                                            #          scores for particular words are reflected in a table on the right."),
-                                            # 
-                                            # helpText("The total sentiment score as well as the percentile
-                                            #          with regard to filtered list of complaints are shown in the results below."),
-                                            # 
-                                            # helpText("Finally, based on the number of topics selected, the complaint is considered
-                                            #          in terms of the relative allocation by topic"),
-                                            # 
-                                            # helpText("First you need to indicate the source of the particular complaint to analyse.
-                                            #          You can select from the following options: "),
-                                            # 
-                                            # 
-                                            # helpText("a) a random complaint from the filtered subset of complaints;"),
-                                            # 
-                                            # helpText("b) any complaint from the full set of complaints by their IDs;"),
-                                            # 
-                                            # helpText("c) an entry of your own."),
 
+                                            helpText("In this section you can explore particular
+                                               complaints."),
+
+                                            helpText("The complaint is reproduced and the sentiment
+                                                     scores for particular words are reflected in a table on the right."),
+
+                                            helpText("The total sentiment score as well as the percentile
+                                                     with regard to filtered list of complaints are shown in the results below."),
+
+                                            helpText("Finally, based on the number of topics selected, the complaint is considered
+                                                     in terms of the relative allocation by topic"),
+
+                                            helpText("First you need to indicate the source of the particular complaint to analyse.
+                                                     You can select from the following options: "),
+
+
+                                            helpText("a) a random complaint from the filtered subset of complaints;"),
+
+                                            helpText("b) any complaint from the full set of complaints by their IDs;"),
+
+                                            helpText("c) an entry of your own."),
+                                            
                                             h6("_________________________________________________________"),
                                             
                                             h4("FILTERS IN PLACE"),
                                             
-                                            textOutput("prod"),
+                                            textOutput("prod2"),
                                             
-                                            textOutput("dateRangeText"),
+                                            textOutput("dateRangeText2"),
                                             
-                                            textOutput("comp"),
-                                            
-                                            # textOutput("top"),
+                                            textOutput("comp2"),
+
+                                            textOutput("top"),
                                             
                                             h6("_________________________________________________________"),
                                             
                                             h4("INPUTS"),
                                             
-                                            # helpText("First indicate your Sampling Method before entering the additional
-                                            #    data."),
-                                            # 
-                                            # br(),
-                                            # 
-                                            # helpText("Please note: For repeated random sampling, it is necessary to
-                                            #    submit one of the two other alternatives before generating a
-                                            #    new random selection"),
-                                            # 
-                                            # br(),
+                                            helpText("First indicate your Sampling Method before entering the additional
+                                               data."),
+
+                                            br(),
+
+                                            helpText("Please note: For repeated random sampling, it is necessary to
+                                               submit one of the two other alternatives before generating a
+                                               new random selection"),
+
+                                            br(),
                                             
                                             radioButtons(inputId = "radbut",
                                                          label = "Sampling Method: ",
@@ -196,12 +196,12 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h6("_________________________________________________________"),
                                             
                                             h4("RESULTS"),
-                                           
+                                            
                                             helpText("Total Sentiment Score: "),
                                             textOutput("sentiment"),
                                             
                                             br(),
-                                           
+                                            
                                             helpText("Percentile: "),
                                             textOutput("percentile"),
                                             
@@ -215,5 +215,5 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             verbatimTextOutput("myText"),
                                             tableOutput("myTable")
                                     )))
-                            ))
+))
 

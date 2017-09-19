@@ -150,9 +150,9 @@ shinyServer(function(input, output) {
         
         
         
-        # bubble plot
+        # bubble datetime plots
         output$linePlot <- renderPlotly({
-        
+                
                 
                 if(input$period == "Day"){
                         
@@ -163,7 +163,7 @@ shinyServer(function(input, output) {
                                        xlab = "Day",
                                        ylab = "Total Complaints Received",
                                        main = "Per Day"))
-
+                        
                         
                 }
                 
@@ -475,6 +475,28 @@ shinyServer(function(input, output) {
                         summarise(tot_sentiment = mean(tot_sentiment))
                 
         })
+        
+        output$prod2 <- renderText({
+                paste("Product: ",
+                      input$product)
+        })
+        
+        output$dateRangeText2  <- renderText({
+                paste("Date Range: ", 
+                      paste(as.character(input$dates), collapse = " to ")
+                )
+        })
+        
+        output$comp2 <- renderText({
+                paste("Compensation Paid: ",
+                      input$compensation)
+        })
+        
+        output$top <- renderText({
+                paste("Number of Topics: ",
+                      input$k)
+        })
+        
         
         output$myText <- renderText({
                 
