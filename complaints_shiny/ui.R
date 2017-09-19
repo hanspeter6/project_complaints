@@ -18,15 +18,34 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     sidebarPanel(
                                             
-                                            h4("Documentation"),
-                                            helpText("This section reflects relative sentiments
-                                                     of complaints related to various products etc..."),
-                                            h4("How it works"),
-                                            h6("A user can select any or all the products shown in the
+                                            h4("DESCRIPTION"),
+                                            
+                                            helpText("This app is designed to support the content analysis of complaints.
+                                                     It was built on a dataset of 20 000 anonymous complaints from a US bank."),
+                                            
+                                            helpText("It consists of three subsections (tabs): "),
+                                            
+                                            helpText("The first aims to provide an overview
+                                                     of sentiments by date and by distribution of total sentiment scores. In this section
+                                                     a user can filter for product type, date range and whether or not compensation has been paid.
+                                                     The chronological distribution of quantity and degree of negativity can be further adjusted to
+                                                     daily or monthly summaries."),
+                                            
+                                            helpText("The second allows an opportunity to explore between two and five topics."),
+                                            
+                                            helpText("The last subsection (tab) allows a user to drill down into any particular complaint
+                                                     in order to get a feeling for the functionality of the sentiment scores as well as the
+                                                     topic allocations."),
+                                            
+                                            h6("_________________________________________________________"),
+                                            
+                                            h4("INPUT"),
+                                            
+                                            helpText("A user can select any or all the products shown in the
                                                drop down menu selection below. A change in the graphic will only reflect
                                                on clicking the 'Submit' button below. One can select a date range as well
                                                as indicating whether you want to consider only those complaints that led
-                                               to complensation"),
+                                               to complensation. This only impacts on the chronological chart in this section."),
                                             
                                             selectInput(inputId = "product",
                                                         label = "Select Product:",
@@ -45,6 +64,9 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                                          choices = c("All", "Yes", "No"),
                                                          selected = "All",
                                                          inline = TRUE),
+                                            
+                                            helpText("Select for daily or monthly averages in terms of total complaints as well as
+                                                     the proportion positive complaints"),
                                             
                                             radioButtons(inputId = "period",
                                                          label = "Period: ",
@@ -136,13 +158,6 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
 
                                             helpText("First you need to indicate the source of the particular complaint to analyse.
                                                      You can select from the following options: "),
-
-
-                                            helpText("a) a random complaint from the filtered subset of complaints;"),
-
-                                            helpText("b) any complaint from the full set of complaints by their IDs;"),
-
-                                            helpText("c) an entry of your own."),
                                             
                                             h6("_________________________________________________________"),
                                             
@@ -161,11 +176,17 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h4("INPUTS"),
                                             
                                             helpText("First indicate your Sampling Method before entering the additional
-                                               data."),
+                                               data. Select one of the following options: "),
+                                            
+                                            helpText("a) A random complaint from the filtered subset of complaints;"),
+                                            
+                                            helpText("b) Any complaint from the full set of complaints by their IDs;"),
+                                            
+                                            helpText("c) An entry of your own."),
+                                            
+                                            h5("Please Note: "),
 
-                                            br(),
-
-                                            helpText("Please note: For repeated random sampling, it is necessary to
+                                            helpText("For repeated random sampling, it is necessary to
                                                submit one of the two other alternatives before generating a
                                                new random selection"),
 
