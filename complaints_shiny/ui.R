@@ -9,15 +9,17 @@
 
 library(shiny)
 library(plotly)
+library(shinythemes)
 
 shinyUI(navbarPage("COMPLAINTS ANALYSIS",
-                   inverse = TRUE,
+                   theme = shinytheme("flatly"),
+                   inverse = FALSE,
                    tabPanel("Sentiment Analysis",
                             sidebarLayout(
                                     sidebarPanel(
                                             
                                             h4("Documentation"),
-                                            h6("This section reflects relative sentiments
+                                            helpText("This section reflects relative sentiments
                                                of complaints related to various products etc..."),
                                             h4("How it works"),
                                             h6("A user can select any or all the products shown in the
@@ -54,6 +56,8 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     
                                     mainPanel(
                                             plotlyOutput("histPlot"),
+                                            br(),
+                                            br(),
                                             plotlyOutput("linePlot")
                                     ))),
                    
@@ -61,24 +65,38 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     
                                     sidebarPanel(
-                                            width = 3,
+                                            width = 4,
                                             
-                                            h4("Documentation"),
-                                            h6("blah blah"),
-                                            h4(" How it works"),
-                                            h6("blah, blah"),
+                                            h4("DESCRIPTION"),
+                                            
+                                            # helpText("In this section between two and five topics can be considered.
+                                            #          The algorithm that is applied to the dataset that
+                                            #          has been filtered in the 'Sentiment Analysis' section is the
+                                            #          Latent Deriche Allocation (LDA), which generates term topic probabilities (betas)
+                                            #          as well as document topic proportions (gammas)."),
+                                            # helpText("The first plot shows the top 15 terms per topic as per the term topic proportions (beta)"),
+                                            # helpText("The second plot reflects the log2 ratios of two topics that can be selected in the menu below. 
+                                            #          For greater readablity, the ratios have been applied only to beta values > 0.007."),
+                                            
+                                            h6("_________________________________________________________"),
+                                            
+                                            h4("FILTERS IN PLACE"),
                                             
                                             textOutput("prod"),
+                                            
                                             textOutput("dateRangeText"),
+                                            
                                             textOutput("comp"),
+                                            
+                                            h6("_________________________________________________________"),
+                                            
+                                            h4("INPUT"),
                                             
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
                                                          choices = c(2,3,4,5),
                                                          selected = 2,
                                                          inline = TRUE),
-                                            
-                                            h3("try tester"),
                                             
                                             uiOutput("allPairs"),
                                             
@@ -90,9 +108,11 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     mainPanel(
                                             
                                             plotOutput("topicPlot"),
-                                            # verbatimTextOutput("prod"),
-                                            # verbatimTextOutput("dateRangeText"),
-                                            # verbatimTextOutput("comp"),
+                                            
+                                            br(),
+                                            
+                                            br(),
+                                            
                                             plotOutput("biPlot")
                                     ))),
                    
@@ -100,32 +120,95 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                             sidebarLayout(
                                     sidebarPanel(
                                             
+                                            h4("DESCRIPTION"),
+                                            # 
+                                            # helpText("In this section you can explore particular
+                                            #    complaints."),
+                                            # 
+                                            # helpText("The complaint is reproduced and the sentiment
+                                            #          scores for particular words are reflected in a table on the right."),
+                                            # 
+                                            # helpText("The total sentiment score as well as the percentile
+                                            #          with regard to filtered list of complaints are shown in the results below."),
+                                            # 
+                                            # helpText("Finally, based on the number of topics selected, the complaint is considered
+                                            #          in terms of the relative allocation by topic"),
+                                            # 
+                                            # helpText("First you need to indicate the source of the particular complaint to analyse.
+                                            #          You can select from the following options: "),
+                                            # 
+                                            # 
+                                            # helpText("a) a random complaint from the filtered subset of complaints;"),
+                                            # 
+                                            # helpText("b) any complaint from the full set of complaints by their IDs;"),
+                                            # 
+                                            # helpText("c) an entry of your own."),
+
+                                            h6("_________________________________________________________"),
+                                            
+                                            h4("FILTERS IN PLACE"),
+                                            
+                                            textOutput("prod"),
+                                            
+                                            textOutput("dateRangeText"),
+                                            
+                                            textOutput("comp"),
+                                            
+                                            # textOutput("top"),
+                                            
+                                            h6("_________________________________________________________"),
+                                            
                                             h4("INPUTS"),
                                             
+                                            # helpText("First indicate your Sampling Method before entering the additional
+                                            #    data."),
+                                            # 
+                                            # br(),
+                                            # 
+                                            # helpText("Please note: For repeated random sampling, it is necessary to
+                                            #    submit one of the two other alternatives before generating a
+                                            #    new random selection"),
+                                            # 
+                                            # br(),
                                             
                                             radioButtons(inputId = "radbut",
-                                                         label = "Sampling Method",
+                                                         label = "Sampling Method: ",
                                                          choices = c("Random", "ID", "Own"),
                                                          inline = TRUE),
+                                            
+                                            br(),
                                             
                                             textInput(inputId = "text",
                                                       label = "Copy Own Sample Here:"),
                                             
+                                            br(),
+                                            
                                             numericInput(inputId = "idno",
-                                                         label = "ID number from 1 to 20 000)",
+                                                         label = "Select an ID number between 1 and 20,000)",
                                                          min = 1,
                                                          max = 20000,
                                                          value = 5),
                                             
+                                            br(),
+                                            
                                             submitButton("Submit"),
                                             
-                                            h4("SUMMARY RESULTS"),
+                                            h6("_________________________________________________________"),
                                             
+                                            h4("RESULTS"),
+                                           
+                                            helpText("Total Sentiment Score: "),
                                             textOutput("sentiment"),
                                             
+                                            br(),
+                                           
+                                            helpText("Percentile: "),
                                             textOutput("percentile"),
                                             
-                                            h3("Topic Probabilities"),
+                                            br(),
+                                            
+                                            helpText("Topic Probabilities: "),
+                                            
                                             tableOutput("gammas")),
                                     
                                     mainPanel(

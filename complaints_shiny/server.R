@@ -147,18 +147,34 @@ shinyServer(function(input, output) {
                                   sum_month = sum(tot_sentiment))
         })
         
+        
+        
+        
         # bubble plot
         output$linePlot <- renderPlotly({
+        
                 
                 if(input$period == "Day"){
-                        ggplotly(qplot(date_received, tot_day, col = proportion_positive, data = for_graph_day(),
-                                       xlab = "Date", ylab = "Total Complaints Received"))
+                        
+                        ggplotly(qplot(date_received,
+                                       tot_day,
+                                       col = proportion_positive,
+                                       data = for_graph_day(),
+                                       xlab = "Day",
+                                       ylab = "Total Complaints Received",
+                                       main = "Per Day"))
+
                         
                 }
                 
                 else if(input$period == "Month") {
-                        ggplotly(qplot(month, tot_month, col = proportion_positive, data = for_graph_month(),
-                                       xlab = "Date", ylab = "Total Complaints Received"))
+                        ggplotly(qplot(month,
+                                       tot_month,
+                                       col = proportion_positive,
+                                       data = for_graph_month(),
+                                       xlab = "Month",
+                                       ylab = "Total Complaints Received",
+                                       main = "Per Month"))
                         
                 }
                 
@@ -242,9 +258,12 @@ shinyServer(function(input, output) {
                         topicPlot <- top_terms_5()
                 }
                 
-                #plot
+                # plot
                 ggplot(topicPlot, aes(term, beta, fill = factor(topic))) +
                         geom_col(show.legend = FALSE) +
+                        labs(title = "Top 15 Terms Per Topic by Beta Values") +
+                        xlab("") +
+                        ylab("") +
                         facet_wrap(~ topic, scales = "free") +
                         coord_flip()
                 
@@ -266,6 +285,11 @@ shinyServer(function(input, output) {
                 paste("Compensation Paid: ",
                       input$compensation)
         })
+        
+        # output$top <- renderText({
+        #         paste("Number of Topics: ",
+        #               input$k)
+        # })
         
         
         # biplots
@@ -310,7 +334,7 @@ shinyServer(function(input, output) {
                         cvec <- paste(c[1], "&", c[2])
                         v <- append(v, cvec)
                 }
-                radioButtons("pairs", "Choose Topic Pair", v)
+                radioButtons("pairs", "Choose Topic Pair A & B", v)
         })
         
         output$biPlot <- renderPlot({
@@ -323,7 +347,7 @@ shinyServer(function(input, output) {
                         
                         bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
                         
-                        log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
+                        log_ratio <- log2(bigBeta[,2]/bigBeta[,3])
                         
                         prs <- bigBeta %>%
                                 mutate(log_ratio = log_ratio[,1]) %>%
@@ -335,7 +359,8 @@ shinyServer(function(input, output) {
                         # and plot it
                         ggplot(prs, aes(term, log_ratio)) +
                                 geom_col() +
-                                labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
+                                labs(title = "Log 2 Ratio of Topic A / Topic B") +
+                                labs(y = "") +
                                 coord_flip() 
                 }
                 else {
@@ -369,7 +394,7 @@ shinyServer(function(input, output) {
                         
                         bigBeta <- topic_pairs_df[topic_pairs_df[,2] > 0.007 | topic_pairs_df[,3] > 0.007,]
                         
-                        log_ratio <- log2(bigBeta[,3]/bigBeta[,2])
+                        log_ratio <- log2(bigBeta[,2]/bigBeta[,3])
                         
                         prs <- bigBeta %>%
                                 mutate(log_ratio = log_ratio[,1]) %>%
@@ -381,7 +406,8 @@ shinyServer(function(input, output) {
                         # and plot it
                         ggplot(prs, aes(term, log_ratio)) +
                                 geom_col() +
-                                labs(y = "Log2 ratio of beta in topic 3 / topic 2") +
+                                labs(y = "") +
+                                labs(title = "Log 2 Ratio of Topic A / Topic B") +
                                 coord_flip()
                 }
                 
@@ -473,7 +499,7 @@ shinyServer(function(input, output) {
         output$percentile <- renderText({
                 
                 # print out the percentile
-                percentile <- ecdf(df_sentiments()$tot_sentiment)
+                percentile <- ecdf(x()$tot_sentiment)
                 target <- percentile(id_scores()$tot_sentiment)
                 print(round(target*100))
         })
