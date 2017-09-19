@@ -58,7 +58,7 @@ shinyServer(function(input, output) {
                 }
                 
                 # compensation
-                if(input$compensation == "Yes & No") {
+                if(input$compensation == "All") {
                         b <- a
                 }
                 else if(input$compensation == "Yes") {
@@ -83,7 +83,7 @@ shinyServer(function(input, output) {
         output$histPlot <- renderPlotly({
                 
                 # defining bottom title
-                if(input$compensation == "Yes & No") {
+                if(input$compensation == "All") {
                         title <- "Total Sentiment: Compensations Paid and Not Paid"
                 }
                 else if(input$compensation == "Yes") {
@@ -132,7 +132,7 @@ shinyServer(function(input, output) {
                         summarise(ave_day = mean(tot_sentiment),
                                   tot_day = n(),
                                   tot_pos = sum(sentiment_number),
-                                  prop_neg = 1 - tot_pos/tot_day,
+                                  proportion_positive = tot_pos/tot_day,
                                   sum_day = sum(tot_sentiment))
         })
         
@@ -143,7 +143,7 @@ shinyServer(function(input, output) {
                         summarise(ave_month = mean(tot_sentiment),
                                   tot_month = n(),
                                   tot_pos = sum(sentiment_number),
-                                  prop_neg = 1 - tot_pos/tot_month,
+                                  proportion_positive = tot_pos/tot_month,
                                   sum_month = sum(tot_sentiment))
         })
         
@@ -151,13 +151,13 @@ shinyServer(function(input, output) {
         output$linePlot <- renderPlotly({
                 
                 if(input$period == "Day"){
-                        ggplotly(qplot(date_received, tot_day, col = prop_neg, data = for_graph_day(),
+                        ggplotly(qplot(date_received, tot_day, col = proportion_positive, data = for_graph_day(),
                                        xlab = "Date", ylab = "Total Complaints Received"))
                         
                 }
                 
                 else if(input$period == "Month") {
-                        ggplotly(qplot(month, tot_month, size = ave_month, col = prop_neg, data = for_graph_month(),
+                        ggplotly(qplot(month, tot_month, col = proportion_positive, data = for_graph_month(),
                                        xlab = "Date", ylab = "Total Complaints Received"))
                         
                 }

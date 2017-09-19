@@ -40,8 +40,8 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             
                                             radioButtons(inputId = "compensation",
                                                          label = "Compensation Paid:",
-                                                         choices = c("Yes & No", "Yes", "No"),
-                                                         selected = "Yes & No",
+                                                         choices = c("All", "Yes", "No"),
+                                                         selected = "All",
                                                          inline = TRUE),
                                             
                                             radioButtons(inputId = "period",
@@ -68,6 +68,10 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                             h4(" How it works"),
                                             h6("blah, blah"),
                                             
+                                            textOutput("prod"),
+                                            textOutput("dateRangeText"),
+                                            textOutput("comp"),
+                                            
                                             radioButtons(inputId = "k",
                                                          label = "Number of Topics:",
                                                          choices = c(2,3,4,5),
@@ -86,9 +90,9 @@ shinyUI(navbarPage("COMPLAINTS ANALYSIS",
                                     mainPanel(
                                             
                                             plotOutput("topicPlot"),
-                                            verbatimTextOutput("prod"),
-                                            verbatimTextOutput("dateRangeText"),
-                                            verbatimTextOutput("comp"),
+                                            # verbatimTextOutput("prod"),
+                                            # verbatimTextOutput("dateRangeText"),
+                                            # verbatimTextOutput("comp"),
                                             plotOutput("biPlot")
                                     ))),
                    
