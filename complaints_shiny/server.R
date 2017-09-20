@@ -180,6 +180,7 @@ shinyServer(function(input, output) {
                 
         })
         
+        
         ## TOPIC ANALYSIS
         
         complaints_dtm <- reactive({
